@@ -1,7 +1,7 @@
 ---
 title: "R for Marine Science Workshop 1"
-author: "Your name here"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: "Natalie Wasinski"
+date: "03-06-2026"
 output: 
  html_document:
     code_folding: show
@@ -46,5 +46,65 @@ library(tidyverse)
 source("Workshop1.R")
 ```
 
+```{r Baseline Workflow setup}
+# Housekeeping
+## Inventory every active object currently residing in session RAM
+objects()
+## Purge global environment
+rm(list = ls())
+# Confirm that global session memory now completely vacant
+objects()
+
+```
+
+```{r 1.9 Integrating data grammar w visual diagnostics}
+# Pipe directly from aggregation to plotting with error bars
+mass_compare_plot <- penguins |>
+  group_by(species, island) |>
+  summarise(
+    mean_mass = mean(body_mass_g, na.rm = TRUE),
+    sd_mass = sd(body_mass_g, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = species, y = mean_mass, colour = island)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean_mass - sd_mass, 
+                    ymax = mean_mass + sd_mass), 
+                width = 0.2) +
+  labs(title = "Mean Body Mass by Species and Island",
+       subtitle = "Error bars represent standard deviation",
+       y = "Mean Body Mass (g)",
+       x = "Species") +
+  theme_minimal()
+
+mass_compare_plot
 
 
+## Challenge ## ---------------------------------
+# Create the plot, calculating standard error
+mass_compare_plot <- penguins |>
+  group_by(species, island) |>
+  summarise(
+    mean_mass = mean(body_mass_g, na.rm = TRUE),
+    sd_mass = sd(body_mass_g, na.rm = TRUE), # Calculate standard deviation
+    n = sum(!is.na(body_mass_g)), # Count non-NA observations
+    std_error = sd_mass / sqrt(n), # Calculate standard error
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = species, y = mean_mass, colour = island)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean_mass - std_error, # Use standard error for min
+                    ymax = mean_mass + std_error), # Use standard error for max
+                width = 0.2) +
+  labs(title = "Mean Body Mass by Species and Island",
+       subtitle = "Error bars represent standard error", # Update subtitle
+       y = "Mean Body Mass (g)",
+       x = "Species") +
+  theme_minimal()
+
+mass_compare_plot
+
+```
+
+```{r 1.9 Integrating data grammar w visual diagnostics}
