@@ -29,8 +29,9 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-Here we are going to wrangling in messy data on the Ross River estuary fish surveys and produce final clean tables and figure.
-We have 4 separate files to wrangle in and use
+
+Here we are going to wrangle in messy data examining the relationship between water quality and predatory fish assemblages along the Ross River Estuary gradient to produce final clean tables and figure.
+We have 4 separate files to use and wrangle in
 
 # Housekeeping
 
@@ -53,13 +54,12 @@ library(readxl) # For reading in excel files
 The catch data is split across 4 tabs in one excel file
 Load indivudally
 ```{r}
-library(readxl)
-library(tidyverse)
 catch1 <- read_excel(here::here("data/workshop2/estuary_catch_log.xlsx"), sheet = 1)
 catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
 catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
 catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
 
+# Bind rows together
 catch_data <- bind_rows(catch1, catch2, catch3, catch4)
 ```
 
@@ -76,6 +76,13 @@ catch_data
 head(catch_data)
 glimpse(catch_data)
 str(catch_data)
+
+#need to check how many sites and species we have
+catch_data |> 
+  distinct(site)
+
+catch_data |> 
+  distinct(species)
 ```
 # need to fix site and place in reasonable order, but we can load metadata to ensure consistency
 # need to fix species names, but we can load taxonomic dictionary to translate to scientific names
@@ -89,7 +96,7 @@ head(metadata)
 glimpse(metadata)
 ```
 
-# Site names are all over the place and need standardised for metadata
+# Site names are all over the place and need standardised for both tables of data and metadata
 ```{r}
 catch_data <- catch_data |>
   mutate(
@@ -117,39 +124,54 @@ catch_data |>
 glimpse(metadata)
 ```
 
-
 # Load Taxonomic Dictionary
 ```{r}
 species_dict <- read_csv("../data/workshop2/species_dictionary.csv")
 head(species_dict)
 ```
 
-# Load sensor data
+# Check common names in catch log match those in the taxonomic dictionary
 ```{r}
-sensor_raw <- read_csv("../data/workshop2/estuary_sonde_data.csv")
+catch_data |> 
+  distinct(species)
+species_dict |>
+  distinct(common_name)
 ```
 
-# Check sensor data
+# Standardise species names in catch log to match taxonomic dictionary
 ```{r}
-head(sensor_raw)
-str(sensor_raw)
-glimpse(sensor_raw)
-summary(sensor_raw)
-```
-
-### Clean up sensor data
-```{r}
-sensor_data <- 
-  sensor_raw |>
+catch_data <- catch_data |>
   mutate(
-    # Break down the messy character string into a proper datetime object
-    datetime = dmy_hm(timestamp),
-    # Convert the -999.0 hardware error to a true NA value
-    clean_turbidity = na_if(turbidity, -999),
-    # Convert negative salinit values to NA
-    clean_salinity = ifelse(salinity < 0, NA, salinity)
+    species = str_to_lower(str_trim(species)),
+    species = str_replace_all(species, " ", "_")
   )
 ```
+
+# Taxonomic translation (common to scientific names) by creating new variable and joining tables
+```{r}
+catch_data <- catch_data |>
+  mutate(common_name = species) |>
+  left_join(species_dict, by = join_by(common_name)) |> 
+  select(site, date, common_name, scientific_name, count) |>
+  select(-common_name)
+
+# Check to see if data is fixed
+glimpse(catch_data)
+```
+
+# Load sensor data
+```{r}
+# Code can be written in separate scripts if it is more complex and you don't want the md file to be extra long, it then can be sourced in so the code runs fully in the md file without all the extra work shown - can still upload separate script to GitHub so the script is accessible if anyone wants to see how the code works.
+source(here::here("code/diw_sensor.R"))
+```
+
+```{r join all data}
+library(tidyverse)
+catch_data_final <- catch_data |>
+  left_join(metadata, by = join_by(site == site_name)) |>
+  left_join(sensor_daily, by = join_by(site, date))
+```
+
 
 # Standardise variable in the catch log to match dictionaries
 ```{r}
@@ -162,21 +184,10 @@ catch_data <- catch_data |>
   )
 ```
 
-# Check common names in catch log match those in the taxonomic dictionary
+
 ```{r}
-catch_data |> 
-  distinct(species)
-species_dict |>
-  distinct(common_name)
+
 ```
 
-# Taxonomic translation (common to scientific names)
-```{r}
-catch_data <- catch_data |>
-  mutate(common_name = species) |>
-  left_join(species_dict, by = join_by(common_name)) |> 
-  select(site, date, common_name, scientific_name, count) |>
-  select(-common_name)
-```
 
 
