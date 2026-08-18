@@ -562,11 +562,28 @@ clean_metadata <- metadata %>%
   )
 
 ## Exercise 2: The Relational Join ## ---------
+# Now that you have a clean metadata table, it is time to merge it with your biological data
+penguins_spatial <- penguins %>%
+  left_join(clean_metadata, by = join_by(island == island_name))
 
+# check that it worked - Scroll to the right to see the new columns
+head(penguins_spatial)
+names(penguins_spatial)
+
+## Exercise 3: The Wide Summary Matrix ## ---------
+penguins_summary <- penguins_spatial %>%
+  drop_na(body_mass_g) %>%
+  group_by(species, island) %>%
+  summarise(max_body_mass = max(body_mass_g)) %>%
+  pivot_wider(names_from = island, values_from = max_body_mass)
+
+penguins_summary
 
 ```
 
 ```{r 2.12 Keystone Exercise}
 # Try on own but will Work on at beginning of next workshop #
+# Done in W2_FinalEx.qmd document
+
 ```
 
