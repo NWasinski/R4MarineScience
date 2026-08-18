@@ -1,3 +1,7 @@
+## Foundations of Data Science - Wrangling and Plotting
+## Natalie Wasinski
+#Sections 1.1-1.8
+
 # Load the primary data science framework and Excel import library
 # install.packages("here")
 library(tidyverse)
@@ -121,7 +125,4 @@ biological_signal <- penguins %>%
     sd_mass_g   = sd(body_mass_g, na.rm = TRUE)            # Standard deviation calculation
   )
 
-print(biological_signal)
-
-
-
+print(biological_signal) 
