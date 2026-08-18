@@ -41,6 +41,9 @@ rm(list=ls())
 library(tidyverse)
 ```
 
+# Workshop 1 Starting from 1.9 to learn Quarto
+
+
 ### Source script
 ```{r source-script1, message=FALSE, warning=FALSE, include=FALSE}
 source("Workshop1.R")
