@@ -1,1 +1,7 @@
-## A repo with code and data for Techniques in Marine Science 1 (MB5370) - R for Marine Science
+## R for Marine Science
+
+#### Building off the fundamentals of programming, this module is focused on advanced data science application. 
+
+#### The workshops include handling noisy environmental monitoring pipelines, high-impact journal visualizations, manipulate native spatial datasets, and generate automated reproducible scientific reports. 
+
+#### Datasets from installed R packages.
